@@ -332,10 +332,21 @@ class player:
     def costumes(self, direction):
         pass
     
-def move_player_up(event):
+#player movement
+def move_player(event):
     if event.keysym == 'w':
         player.move(0, -5)
-c.bind_all('<KeyPress-w>', move_player_up)
+    if event.keysym == 's':
+        player.move(0, 5)
+    if event.keysym == 'd':
+        player.move(5, 0)
+    if event.keysym == 'a':
+        player.move(-5, 0)
+c.bind_all('<KeyPress-w>', move_player)
+c.bind_all('<KeyPress-s>', move_player)
+c.bind_all('<KeyPress-d>', move_player)
+c.bind_all('<KeyPress-a>', move_player)
+
 
 #c.create_rectangle(190, 182, 210, 208, fill='red')#shirt
 #c.create_polygon(190, 182, 183, 182, 183, 199, 188, 199, 188, 192, fill='red', outline='black')#left arm
