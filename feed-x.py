@@ -320,11 +320,23 @@ class x:
 
 class player:
     def render(self, x = None, y = None):
-        pass
+        self.base = c.create_rectangle(190, 190, 210, 210, fill='red')
+        self.x = 200
+        self.y = 200
     def move(self, x, y, SwitchCostume = None):
-        pass
+        c.move(self.base, x, y)
+        self.x += x
+        self.y += y
+    def goto(self, x, y):
+        self.move(x-self.x, y-self.y)
     def costumes(self, direction):
         pass
+    
+def move_player_up(event):
+    if event.keysym == 'w':
+        player.move(0, -5)
+c.bind_all('<KeyPress-w>', move_player_up)
+
 #c.create_rectangle(190, 182, 210, 208, fill='red')#shirt
 #c.create_polygon(190, 182, 183, 182, 183, 199, 188, 199, 188, 192, fill='red', outline='black')#left arm
 #c.create_polygon(210, 182, 217, 182, 217, 199, 212, 199, 212, 192, fill='red', outline='black')#right arm
@@ -398,7 +410,9 @@ c.create_line(0, 375, 1000, 375)
 c.create_line(500, 0, 500, 750)
 tree_list.append(tree())
 tree_list[0].create(300, 300)
+
 player = player()
+player.render()
 
 tk.update()
 ###
