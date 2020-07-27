@@ -1,8 +1,9 @@
 virsion_number = 'alpha 0.1.0'
 credits_ = '      Programed with Python.\nCreated by 0-Zmaster_ScotlandCode.\n'
 #defined for begening
-backdropnum = [1, 3] # backdrop number, y button multiplier
+backdropnum = [1, 3] # backdrop number, y button max 
 buttnselect = [1, 1] #x, y buttons in button grid
+buttnnum = 3
 notifier = 0 #notification timer in title screen
 disforselect = None #distance for selecting
 selected = False #ditermens if somthig was selected
@@ -38,7 +39,7 @@ def addy (event):#moves selector up the distance for selecting when up arrow is 
 c.bind_all('<KeyPress-Up>', addy)
 
 def suby (event):#moves selector down the distance for selecting when down arrow is pressed
-    maxnum = backdropnum [1] 
+    maxnum = buttnnum 
     if buttnselect [1] < maxnum:
         c.move(s, 0, disforselect)
     if event.keysym == 'Down':
@@ -52,7 +53,7 @@ def select (event):#selects the option that the selector is selecting
     if event.keysym == 'Return':
         if buttnselect [1] == 2 and backdropnum [0] == 1:
             backdropnum [0] = 2
-            backdropnum [1] = 3
+            buttnnum = 3
         if buttnselect [1] == 9 and backdropnum [0] == 2 or buttnselect [1] == 1 and backdropnum [0] == 1:
             buttnselect [1] = 2
             backdropnum [0] = 3
@@ -135,7 +136,7 @@ if backdropnum [0] == 2:
     c.create_rectangle(10, 490, 200, 540, fill='grey', outline='black')
     c.create_text(100, 510, text='Play', font=('Courier', 15))
     
-    backdropnum [1] = 9
+    buttnnum = 9
     disforselect = 60
     buttnselect = [0, 1]
     tk.update()
@@ -193,7 +194,7 @@ if backdropnum [0] == 3:
     
     backdropnum [0] = 3
     buttnselect [1] = 1
-    backdropnum [1] = 5
+    buttnnum = 5
     disforselect = 115
     selected = False
 
@@ -246,8 +247,9 @@ notifier = 0
 entryline.destroy()
 entryline = None
 
-##mobs
 
+##mobs
+mob_dictionary = {}
 #pre-defined mobs      #
 class x:
     def create(self, LeftFace = None):#x and y peramiters will not be here due to the goto command
@@ -320,6 +322,7 @@ class x:
 
 class player:
     def render(self, x = None, y = None):
+        #use Gimp
         self.base = c.create_rectangle(190, 190, 210, 210, fill='red')
         self.x = 200
         self.y = 200
@@ -334,26 +337,31 @@ class player:
     
 #player movement
 def move_player(event):
+        
+    global player_moving
+    
     if event.keysym == 'w':
         player.move(0, -5)
-    if event.keysym == 's':
+        player_moving = 'w'
+        
+    elif event.keysym == 's':
         player.move(0, 5)
-    if event.keysym == 'd':
+        player_moving = 's'
+        
+    elif event.keysym == 'd':
         player.move(5, 0)
-    if event.keysym == 'a':
+        player_moving = 'd'
+        
+    elif event.keysym == 'a':
         player.move(-5, 0)
+        player_moving = 'a'
+    else:
+        player_moving = None
+                
 c.bind_all('<KeyPress-w>', move_player)
 c.bind_all('<KeyPress-s>', move_player)
 c.bind_all('<KeyPress-d>', move_player)
 c.bind_all('<KeyPress-a>', move_player)
-
-
-#c.create_rectangle(190, 182, 210, 208, fill='red')#shirt
-#c.create_polygon(190, 182, 183, 182, 183, 199, 188, 199, 188, 192, fill='red', outline='black')#left arm
-#c.create_polygon(210, 182, 217, 182, 217, 199, 212, 199, 212, 192, fill='red', outline='black')#right arm
-#c.create_rectangle(198, 179, 202, 185, fill='#e4bd83')#neck
-#c.create_rectangle(194, 180, 206, 165, fill='#e4bd83')#head
-#c.create_polygon(190, 208, 210, 208, 210, 230, 203, 230, 203, 214, 197, 214, 197, 230, 190, 230, fill='#7077a5', outline='black')#legs    
 
 #random-spawning mobs                 #
 class mobs:
@@ -362,35 +370,63 @@ class peacemobs(mobs):
     pass
 class meanmobs(mobs):
     pass
+
+
+
 ##blocks
 class blocks:
     def brake(self):#might want to add particles for breaking blocks
-        pass
+        self.move(1050, 0)
     def place(self):
         pass
+    def give(self, num=1):
+        pass
+    
 class fence(blocks):
     pass
 class xbed(blocks):
     pass
 class znapplesap(blocks):
     pass
+
+
+
 ##terrain
-tree_list = []
+tree_dict = {} #{['x', 'y']:tree}
 class tree(blocks):
     def trunk(self, x, y):
         self.base = c.create_rectangle(x-6, y, x+6, y-40, fill='brown', outline='brown')
     def leaves(self, x, y):
         self.leaf = c.create_oval(x-17, y-33, x+17, y-65, fill='#2ea432', outline='#2ea432')
-    def create(self, x, y, again = None):
+    def __init__(self, x, y):
         self.trunk(x, y)
         self.leaves(x, y)
-
-class znappletree(tree):
-    def leaves(self, x, y):
-        self.leaf = c.create_oval(x-15, y, x+1, y+5, fill='#2f624e', outline='#2f624e')#2f624e
-    def costumes(self, stagenum):
-        pass
+        self.cords = (x, y)
+        tree_dict.update({self.cords:self})
+    def move(self, x, y):
+        c.move(self.base, x, y)
+        c.move(self.leaf, x, y)
+        return self.cords
+        
+        #applies when object is broken or placed off the screen
+        if self.cords [0] < 0 or self.cords [0] > 1000 or self.cords [1] > 0 or self.cords [1] > 750:
+            del tree_dict [(self.cords [0], self.cords [1])]
+        else:
+            del tree_dict [(self.cords[0], self.cords[1])]
+            self.cords = (self.cords+x, self.cords+y)
+            tree_dict.update({self.cords:self})
     
+
+
+#class znappletree(tree):
+    #def leaves(self, x, y):
+        #self.leaf = c.create_oval(x-15, y, x+1, y+5, fill='#2f624e', outline='#2f624e')#2f624e
+    #def costumes(self, stagenum):
+        #pass
+
+
+
+master_dictionary = {'mobs':mob_dictionary, 'trees':tree_dict}
 #seed calculations
 print('seed: ' + str(seed))
 while seed > 9999999:
@@ -412,16 +448,12 @@ notifier = seed.find('0')
 seed = seed.split('0')
 seed = str(notifier).join(seed)
 print('genoration code: ' + str(seed))
-#???seed = int(seed)???
 
-#play screen
+#grass backround (may be temperary)
 c.create_rectangle(0, 0, 1000, 750, fill='#41da53', outline='#41da53')
 ###
 c.create_line(0, 375, 1000, 375)
 c.create_line(500, 0, 500, 750)
-tree_list.append(tree())
-tree_list[0].create(300, 300)
-
 player = player()
 player.render()
 
@@ -434,10 +466,48 @@ freed.create()
 dexter = x()
 dexter.create()
 
-#toolbar selection
+tree(300, 300)
+
+print(tree_dict)
+
+#toolbar/toolbar selection
+
+class toolbars:
+    def __init__(self):
+        c.create_rectangle(925, 50, 970, 375, fill='grey')
+    def make_toolbar(self):
+        #slots in order
+        slot1 = c.create_rectangle(930, 55, 965, 90, fill='#8a8a8a')#1
+        slot2 = c.create_rectangle(930, 95, 965, 130, fill='#8a8a8a')#2
+        slot3 = c.create_rectangle(930, 135, 965, 170, fill='#8a8a8a')#3
+        slot4 = c.create_rectangle(930, 175, 965, 210, fill='#8a8a8a')#4
+        slot5 = c.create_rectangle(930, 215, 965, 250, fill='#8a8a8a')#5
+        slot6 = c.create_rectangle(930, 255, 965, 290, fill='#8a8a8a')#6
+        slot7 = c.create_rectangle(930, 295, 965, 330, fill='#8a8a8a')#7
+        slot8 = c.create_rectangle(930, 335, 965, 370, fill='#8a8a8a')#8
+    def move(self, x, y):
+        c.move(slot1, x, y)
+        c.move(slot2, x, y)
+        c.move(slot3, x, y)
+        c.move(slot4, x, y)
+        c.move(slot5, x, y)
+        c.move(slot6, x, y)
+        c.move(slot7, x, y)
+        c.move(slot8, x, y)
+toolbar = toolbars()
+##selector
+s = c.create_rectangle(927, 52, 968, 93, fill='yellow', outline='yellow')
+
+disforselect = 40
+buttnselect [1] = 1
+buttnnum = 8
+
+toolbar.make_toolbar()
+
+
 
 while backdropnum [0] == 4:
-    print('h')
+    print(buttnselect)
         
     
     tk.update()
